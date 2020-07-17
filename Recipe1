@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# This file is designed to run in debian stretch docker images.
+
+ARCH=$1
+
+main() {
+
+  set -e # Halt on error
+  set -x # Be verbose
+
+  # shift 2 #need to adjust parameter list so $makefile_overrides start at $1
+
+  fetch-build-dependencies
+
+  echo 'Recipe1 completed'
+}
+
+#################################################################################
+# Fetch compile-time dependencies only
+##################################################################################
+fetch-build-dependencies() {
+  echo "fetching dependencies for arm arch: $ARCH"
+
+  apt-get update
+  apt-get install -y \
+  apt-utils \
+  g++ \
+  git \
+  cmake \
+  wget \
+  pkg-config \
+  python \
+  perl \
+  gperf \
+  bison \
+  flex
+
+  # Needed for v8, part of QtWebEngine
+  dpkg --add-architecture i386
+  apt-get update
+  apt-get install -y \
+    gcc-multilib \
+    g++-multilib \
+    linux-libc-dev:i386
+
+  # allow to download $ARCH-specific packages
+  dpkg --add-architecture $ARCH
+
+  # ??????? make this not-arch specific
+  apt-get update
+  apt-get install -y \
+  crossbuild-essential-$ARCH \
+  binutils-arm-linux-gnueabihf \
+  qemu \
+  binfmt-support \
+  qemu-user-static \
+  debootstrap
+  # ???????????????????
+
+  apt-get install -y \
+    libsndfile1-dev:$ARCH \
+    libasound2-dev:$ARCH \
+    portaudio19-dev:$ARCH \
+    libportmidi-dev:$ARCH \
+    zlib1g-dev:$ARCH \
+    libfreetype6:$ARCH \
+    libfreetype6-dev:$ARCH \
+    libmp3lame-dev:$ARCH \
+    libssl1.1:$ARCH \
+    libssl-dev:$ARCH \
+    libdrm-dev:$ARCH \
+    libgl1-mesa-dev:$ARCH \
+    libpulse-dev:$ARCH \
+    libcups2:$ARCH \
+    libcups2-dev:$ARCH \
+    libfontconfig1-dev:$ARCH \
+    libfontconfig1:$ARCH \
+    openssl:$ARCH \
+    libssl-dev:$ARCH \
+    libwebp-dev:$ARCH \
+    libprotobuf-dev:$ARCH \
+    libjsoncpp-dev:$ARCH \
+    libevent-dev:$ARCH \
+    libsnappy-dev:$ARCH \
+    libvpx-dev:$ARCH \
+    libre2-dev:$ARCH \
+    libxslt1-dev:$ARCH \
+    libavcodec-dev:$ARCH \
+    cross-gcc-dev \
+    xz-utils
+
+  apt-get install -y \
+    alsa-tools:$ARCH \
+    alsa-utils:$ARCH \
+    libasound2-plugins:$ARCH \
+    pulseaudio:$ARCH \
+    liblcms2-2:$ARCH \
+    libmng1:$ARCH \
+    libpulse0:$ARCH \
+    libjson-c-dev:$ARCH \
+    libexpat1-dev:$ARCH \
+    libdbus-1-3:$ARCH \
+    libglib2.0-0:$ARCH \
+    libkeyutils-dev:$ARCH \
+    libwrap0:$ARCH \
+    libacl1:$ARCH \
+    libpcre3:$ARCH \
+    libgles2-mesa-dev:$ARCH \
+    libegl1-mesa-dev:$ARCH \
+    libgles2-mesa:$ARCH \
+    libegl1-mesa:$ARCH \
+    at-spi2-core:$ARCH \
+    libatspi2.0-0:$ARCH \
+    libatspi2.0-dev:$ARCH \
+    xkb-data:$ARCH \
+    libxkbcommon-dev:$ARCH \
+    libxkbcommon-x11-0:$ARCH \
+    libxkbcommon0:$ARCH \
+    libopus0:$ARCH \
+    libopus-dev:$ARCH \
+    libopusfile0:$ARCH \
+    libopusfile-dev:$ARCH
+
+  apt-get clean
+
+  # build and install Qt 5.9
+  build-install-qt
+
+  rm -rf /qt5source
+  apt-get clean
+}
+
+###################################################################################
+# Fetch Qt sources, compile and install it
+###################################################################################
+build-install-qt() {
+  git clone https://code.qt.io/qt/qt5.git qt5source
+  cd qt5source
+  git checkout v5.9.9
+  git submodule update --init --recursive
+  # ????????? do this workaround only for armhf case
+  cp -r qtbase/mkspecs/linux-arm-gnueabi-g++ qtbase/mkspecs/linux-arm-gnueabihf-g++
+  sed -i 's/gnueabi/gnueabihf/g' qtbase/mkspecs/linux-arm-gnueabihf-g++/qmake.conf
+  # ???????
+  mkdir build
+  cd build
+  # ??????? TODO: make this not-arch specific
+  export PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig
+  export PKG_CONFIG_SYSROOT_DIR=/.
+  export PKG_CONFIG_PREFIX=/usr/lib/arm-linux-gnueabihf
+  ../configure -release -prefix /qt5 -xplatform linux-arm-gnueabihf-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtnetworkauth -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -cups -accessibility -opengl desktop -pkg-config
+  # ??????
+  make -j $(nproc)
+  make install -j $(nproc)
+}
+
+main "$@"
