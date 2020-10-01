@@ -2,28 +2,21 @@
 
 # This file is designed to run in debian stretch docker images.
 
+# Set architecture (armhf, arm64)
 ARCH=$1
 
-main() {
+# Set Qt version to be compiled
+QTVERSION=v5.9.9
 
-  set -e # Halt on error
-  set -x # Be verbose
+set -e # Halt on error
+set -x # Be verbose
 
-  # shift 2 #need to adjust parameter list so $makefile_overrides start at $1
+# Fetch dependencies for Qt compilation
+echo "fetching dependencies for arm arch: $ARCH"
 
-  fetch-build-dependencies
-
-  echo 'Recipe1 completed'
-}
-
-#################################################################################
-# Fetch compile-time dependencies only
-##################################################################################
-fetch-build-dependencies() {
-  echo "fetching dependencies for arm arch: $ARCH"
-
-  apt-get update
-  apt-get install -y \
+# Fetch x86_64 dependencies
+apt-get update
+apt-get install -y \
   apt-utils \
   g++ \
   git \
@@ -36,29 +29,45 @@ fetch-build-dependencies() {
   bison \
   flex
 
+if [ "$ARCH" == "armhf" ]
+then
   # Needed for v8, part of QtWebEngine
+  # Some libraries should be compiled for i386 (32bit)
   dpkg --add-architecture i386
   apt-get update
   apt-get install -y \
     gcc-multilib \
     g++-multilib \
     linux-libc-dev:i386
+fi
 
-  # allow to download $ARCH-specific packages
-  dpkg --add-architecture $ARCH
+ARCHITECTURE=arm-linux-gnueabihf
+XPLATFORM=linux-arm-gnueabihf
 
-  # ??????? make this not-arch specific
-  apt-get update
-  apt-get install -y \
+if [ "$ARCH" == "armhf" ]
+then
+  ARCHITECTURE=arm-linux-gnueabihf
+  XPLATFORM=linux-arm-gnueabihf
+elif [ "$ARCH" == "arm64" ]
+then
+  ARCHITECTURE=aarch64-linux-gnu
+  XPLATFORM=linux-aarch64-gnu
+fi
+
+# allow to download $ARCH-specific packages
+dpkg --add-architecture $ARCH
+
+apt-get update
+apt-get install -y \
   crossbuild-essential-$ARCH \
-  binutils-arm-linux-gnueabihf \
+  binutils-$ARCHITECTURE \
   qemu \
   binfmt-support \
   qemu-user-static \
-  debootstrap
-  # ???????????????????
+  cross-gcc-dev \
+  xz-utils
 
-  apt-get install -y \
+apt-get install -y \
     libsndfile1-dev:$ARCH \
     libasound2-dev:$ARCH \
     portaudio19-dev:$ARCH \
@@ -86,11 +95,9 @@ fetch-build-dependencies() {
     libvpx-dev:$ARCH \
     libre2-dev:$ARCH \
     libxslt1-dev:$ARCH \
-    libavcodec-dev:$ARCH \
-    cross-gcc-dev \
-    xz-utils
+    libavcodec-dev:$ARCH
 
-  apt-get install -y \
+apt-get install -y \
     alsa-tools:$ARCH \
     alsa-utils:$ARCH \
     libasound2-plugins:$ARCH \
@@ -122,37 +129,40 @@ fetch-build-dependencies() {
     libopusfile0:$ARCH \
     libopusfile-dev:$ARCH
 
-  apt-get clean
+apt-get clean
 
-  # build and install Qt 5.9
-  build-install-qt
-
-  rm -rf /qt5source
-  apt-get clean
-}
-
-###################################################################################
 # Fetch Qt sources, compile and install it
-###################################################################################
-build-install-qt() {
-  git clone https://code.qt.io/qt/qt5.git qt5source
-  cd qt5source
-  git checkout v5.9.9
-  git submodule update --init --recursive
-  # ????????? do this workaround only for armhf case
+
+git clone https://code.qt.io/qt/qt5.git qt5source
+cd qt5source
+git checkout $QTVERSION
+git submodule update --init --recursive
+
+
+# Workaround for armhf case for Qt 5.9
+if [ "$ARCH" == "armhf" ]
+then
   cp -r qtbase/mkspecs/linux-arm-gnueabi-g++ qtbase/mkspecs/linux-arm-gnueabihf-g++
   sed -i 's/gnueabi/gnueabihf/g' qtbase/mkspecs/linux-arm-gnueabihf-g++/qmake.conf
-  # ???????
-  mkdir build
-  cd build
-  # ??????? TODO: make this not-arch specific
-  export PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig
-  export PKG_CONFIG_SYSROOT_DIR=/.
-  export PKG_CONFIG_PREFIX=/usr/lib/arm-linux-gnueabihf
-  ../configure -release -prefix /qt5 -xplatform linux-arm-gnueabihf-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtnetworkauth -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -cups -accessibility -opengl desktop -pkg-config
-  # ??????
-  make -j $(nproc)
-  make install -j $(nproc)
-}
+fi
 
-main "$@"
+mkdir build
+cd build
+
+export PKG_CONFIG_LIBDIR=/usr/lib/$ARCHITECTURE/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=/.
+export PKG_CONFIG_PREFIX=/usr/lib/$ARCHITECTURE
+
+# Configure Qt
+../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtnetworkauth -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -cups -accessibility -opengl desktop -pkg-config
+
+make -j $(nproc)
+make install -j $(nproc)
+
+# Cleanup Docker image
+rm -rf /qt5source
+apt-get clean autoclean
+apt-get autoremove --purge -y
+rm -rf /tmp/* /var/{cache,log,backups}/* /var/lib/apt/*
+
+echo 'Recipe1 completed'
