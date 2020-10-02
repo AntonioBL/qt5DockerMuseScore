@@ -156,8 +156,8 @@ export PKG_CONFIG_PREFIX=/usr/lib/$ARCHITECTURE
 # Configure Qt
 ../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtnetworkauth -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -cups -accessibility -opengl desktop -pkg-config
 
-make -j $(nproc)
-make install -j $(nproc)
+make -j $(($(nproc)+1))
+make install -j $(($(nproc)+1))
 
 # Cleanup Docker image
 rm -rf /qt5source
