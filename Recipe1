@@ -6,7 +6,7 @@
 ARCH=$1
 
 # Set Qt version to be compiled
-QTVERSION=v5.9.9
+QTVERSION=v5.15.2
 
 set -e # Halt on error
 set -x # Be verbose
@@ -29,17 +29,17 @@ apt-get install -y \
   bison \
   flex
 
-if [ "$ARCH" == "armhf" ]
-then
-  # Needed for v8, part of QtWebEngine
-  # Some libraries should be compiled for i386 (32bit)
-  dpkg --add-architecture i386
-  apt-get update
-  apt-get install -y \
-    gcc-multilib \
-    g++-multilib \
-    linux-libc-dev:i386
-fi
+# if [ "$ARCH" == "armhf" ]
+# then
+#   # Needed for v8, part of QtWebEngine
+#   # Some libraries should be compiled for i386 (32bit)
+#   dpkg --add-architecture i386
+#   apt-get update
+#   apt-get install -y \
+#     gcc-multilib \
+#     g++-multilib \
+#     linux-libc-dev:i386
+# fi
 
 ARCHITECTURE=arm-linux-gnueabihf
 XPLATFORM=linux-arm-gnueabihf
@@ -139,7 +139,7 @@ git checkout $QTVERSION
 git submodule update --init --recursive
 
 
-# Workaround for armhf case for Qt 5.9
+# Workaround for armhf case for Qt 5.x
 if [ "$ARCH" == "armhf" ]
 then
   cp -r qtbase/mkspecs/linux-arm-gnueabi-g++ qtbase/mkspecs/linux-arm-gnueabihf-g++
@@ -154,7 +154,7 @@ export PKG_CONFIG_SYSROOT_DIR=/.
 export PKG_CONFIG_PREFIX=/usr/lib/$ARCHITECTURE
 
 # Configure Qt
-../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtnetworkauth -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -cups -accessibility -opengl desktop -pkg-config
+../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtmacextras -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -skip qtwebengine -cups -accessibility -opengl desktop -pkg-config
 
 make -j $(($(nproc)+1))
 make install -j $(($(nproc)+1))
@@ -166,3 +166,4 @@ apt-get autoremove --purge -y
 rm -rf /tmp/* /var/{cache,log,backups}/* /var/lib/apt/*
 
 echo 'Recipe1 completed'
+
