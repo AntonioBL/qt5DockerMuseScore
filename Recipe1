@@ -123,6 +123,20 @@ apt-get install -y \
     xkb-data:$ARCH \
     libxkbcommon-dev:$ARCH \
     libxkbcommon-x11-0:$ARCH \
+    libxkbcommon-x11-dev:$ARCH \
+    libx11-dev:$ARCH \
+    libx11-xcb-dev:$ARCH \
+    libxrender-dev:$ARCH \
+    libxcb-keysyms1-dev:$ARCH \
+    libxcb-image0-dev:$ARCH \
+    libxcb-icccm4-dev:$ARCH \
+    libxcb-render-util0-dev:$ARCH \
+    libxcb-xinerama0-dev:$ARCH \
+    flite1-dev:$ARCH \
+    libspeechd-dev:$ARCH \
+    speech-dispatcher:$ARCH \
+    libgstreamer1.0-0:$ARCH \
+    gstreamer1.0-tools:$ARCH \
     libxkbcommon0:$ARCH \
     libopus0:$ARCH \
     libopus-dev:$ARCH \
@@ -154,7 +168,7 @@ export PKG_CONFIG_SYSROOT_DIR=/.
 export PKG_CONFIG_PREFIX=/usr/lib/$ARCHITECTURE
 
 # Configure Qt
-../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtdocgallery -skip qtgamepad -skip qtmacextras -skip qtpurchasing -skip qtscript -skip qtsensors -skip qtspeech -skip qtwayland -skip qtwinextras -skip qtwebengine -cups -accessibility -opengl desktop -pkg-config
+../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -nomake examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtdatavis3d -skip qtdoc -skip qtdocgallery -skip qtgamepad -skip qtpurchasing -skip qtsensors -skip qtwayland -skip qtwebengine -cups -accessibility -opengl desktop -pkg-config
 
 make -j $(($(nproc)+1))
 make install -j $(($(nproc)+1))
