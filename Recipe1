@@ -27,6 +27,7 @@ apt-get install -y \
   perl \
   gperf \
   bison \
+  p7zip-full \
   flex
 
 # if [ "$ARCH" == "armhf" ]

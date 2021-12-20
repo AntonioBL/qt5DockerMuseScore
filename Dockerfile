@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:buster
 
 ADD https://raw.githubusercontent.com/AntonioBL/qt5DockerMuseScore/qt515/Recipe1 /
 
