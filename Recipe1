@@ -124,6 +124,23 @@ apt-get install -y \
     libxkbcommon-dev:$ARCH \
     libxkbcommon-x11-0:$ARCH \
     libxkbcommon0:$ARCH \
+    libxcb1-dev:$ARCH \
+    libxcb-glx0-dev:$ARCH \
+    libxcb-keysyms1-dev:$ARCH \
+    libxcb-image0-dev:$ARCH \
+    libxcb-shm0-dev:$ARCH \
+    libxcb-icccm4-dev:$ARCH \
+    libxcb-sync-dev:$ARCH \
+    libxcb-xfixes0-dev:$ARCH \
+    libxcb-shape0-dev:$ARCH \
+    libxcb-randr0-dev:$ARCH \
+    libxcb-render-util0-dev:$ARCH \
+    libxcb-xtest0-dev:$ARCH \
+    libxcb-xinerama0-dev:$ARCH \
+    libxcb-shape0-dev:$ARCH \
+    libxcb-xkb-dev:$ARCH \
+    libxcb-util0-dev:$ARCH \
+    libx11-xcb-dev:$ARCH \
     libopus0:$ARCH \
     libopus-dev:$ARCH \
     libopusfile0:$ARCH \
