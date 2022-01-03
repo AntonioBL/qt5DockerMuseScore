@@ -133,6 +133,16 @@ apt-get install -y \
     libxcb-icccm4-dev:$ARCH \
     libxcb-render-util0-dev:$ARCH \
     libxcb-xinerama0-dev:$ARCH \
+    libxcb1-dev:$ARCH \
+    libxcb-glx0-dev:$ARCH \
+    libxcb-shm0-dev:$ARCH \
+    libxcb-sync-dev:$ARCH \
+    libxcb-xfixes0-dev:$ARCH \
+    libxcb-shape0-dev:$ARCH \
+    libxcb-randr0-dev:$ARCH \
+    libxcb-xtest0-dev:$ARCH \
+    libxcb-xkb-dev:$ARCH \
+    libxcb-util0-dev:$ARCH \
     flite1-dev:$ARCH \
     libspeechd-dev:$ARCH \
     speech-dispatcher:$ARCH \
