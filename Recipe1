@@ -152,7 +152,9 @@ apt-get install -y \
     libopus0:$ARCH \
     libopus-dev:$ARCH \
     libopusfile0:$ARCH \
-    libopusfile-dev:$ARCH
+    libopusfile-dev:$ARCH \
+    libpango1.0-dev:$ARCH \
+    libgtk-3-dev:$ARCH
 
 apt-get clean
 
