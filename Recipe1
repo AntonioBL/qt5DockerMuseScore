@@ -181,7 +181,7 @@ export PKG_CONFIG_SYSROOT_DIR=/.
 export PKG_CONFIG_PREFIX=/usr/lib/$ARCHITECTURE
 
 # Configure Qt
-../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -make examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtdatavis3d -skip qtdoc -skip qtdocgallery -skip qtgamepad -skip qtpurchasing -skip qtsensors -skip qtwayland -skip qtwebengine -cups -accessibility -opengl desktop -pkg-config
+../configure -release -prefix /qt5 -xplatform $XPLATFORM-g++ -opensource -confirm-license -platform linux-g++ -make examples -nomake tests -skip qt3d -skip qtcanvas3d -skip qtdatavis3d -skip qtdoc -skip qtdocgallery -skip qtgamepad -skip qtpurchasing -skip qtsensors -skip qtwayland -skip qtwebengine -cups -accessibility -opengl desktop -pkg-config -gtk
 
 make -j $(($(nproc)+1))
 make install -j $(($(nproc)+1))
